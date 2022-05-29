@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Baby Tower</title>
+	<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+	<script src="https://requirejs.org/docs/release/2.3.6/minified/require.js" type="application/javascript"></script>
+	<!-- <link rel="stylesheet" href="./css/style.css"> -->
+
+<style>
+	body,html{
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+	}
+
+	.top-bar-site{
+		width: 100%;
+		height: 60px;
+		background-color: transparent-;
+		display: flex;
+		flex-direction: row;
+		align-items: center; 
+		justify-content: flex-end;
+	}
+
+	.top-bar-site button{
+		width: 200px;
+		height: 40px;
+		border-radius: 5px;
+		background-color: #844be9;
+		color: #FFF;
+		font-weight: bold;
+		font-family: Arial;
+		margin-right: 30px;
+		border:none;
+		text-transform: uppercase;
+		cursor: pointer;
+  		white-space: nowrap;
+  		overflow: hidden;
+  		text-overflow: ellipsis;		
+	}
+
+	.internal-paddind-button-adjust{
+		padding-left: 30px;
+		box-sizing: border-box;
+	}
+
+
+	.cursor-not-matamask{
+		  cursor: not-allowed;
+		  pointer-events: none;
+	}
+
+	.logout-bt{
+		background-image: url(./img/logout.png);
+		background-repeat: no-repeat;
+		background-position: center;
+		width: 30px;
+		height: 30px;
+		background-size: contain;
+    	margin-right: 30px;
+	}
+
+	.hideElements{
+		display: none;
+		pointer-events: none;
+		opacity: 0;
+	}
+	
+</style>
+
+</head>
+<body>
+
+	<div class="top-bar-site">
+		<button id="buttonConnectWallet"> Connect Metamask</button>
+		<div id="btlogout" class="logout-bt hideElements"></div>
+	</div>
+
+
+<script>
+	
+	let globalConf;
+
+	fetch("./data/contract.json")
+	  .then(response => response.json())
+	  .then(json => globalConf = json );
+
+	const provider = new ethers.providers.Web3Provider(window.ethereum)
+	const btlogin  = document.getElementById("buttonConnectWallet");
+	const btlogout = document.getElementById("btlogout");
+	window.usraddr = null;
+
+	touggleBotton = () => {
+
+		if(!window.ethereum){
+
+			btlogin.innerText = "Metamask is not installed";
+			btlogin.classList.add("cursor-not-matamask");
+			return false;
+		}
+
+		btlogin.addEventListener("click", ()=>{
+
+			loginaction();
+		})
+
+	}
+
+	async function loginaction() {
+		try {
+			const ddrs = await window.ethereum.request({method: 'eth_requestAccounts'});
+			
+			if(!ddrs){return}
+			
+			window.usraddr = ddrs[0];
+			btlogin.classList.add("internal-paddind-button-adjust");
+			btlogin.innerText = window.usraddr;
+			btlogout.classList.remove("hideElements");
+			clm(window.usraddr);
+		} catch(e) {
+			console.log(e.message);
+			return
+		}
+	}
+
+	window.addEventListener("DOMContentLoaded", (event)=> {
+    	touggleBotton();
+  	});
+
+  	async function clm(a){
+
+  		const contract = globalConf.contract.address[0].address;
+  		const abi = globalConf.contract.abi;
+  		const gaslimit = globalConf.contract.confGas[0].gaslimit;
+  		const coust = globalConf.contract.coust[0].amount;
+
+  		const signer = provider.getSigner();
+  		const daiContract = new ethers.Contract(contract, abi, signer);
+  		const mint = await daiContract.safeMint(a,{
+  			gasLimit: gaslimit,
+  			value: ethers.utils.parseEther(coust)
+  		})
+  		.then((res)=>{
+  			console.log(res)
+  		}).catch((err)=>{
+  			console.log(err)
+  		})
+		
+  	}
+
+
+</script>	
+</body>
+</html>

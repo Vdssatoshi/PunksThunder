@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Baby Tower</title>
+	<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+	<script src="https://requirejs.org/docs/release/2.3.6/minified/require.js" type="application/javascript"></script>
+	<!-- <link rel="stylesheet" href="./css/style.css"> -->
+
+<style>
+	body,html{
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+	}
+
+	.top-bar-site{
+		width: 100%;
+		height: 60px;
+		background-color: transparent-;
+		display: flex;
+		flex-direction: row;
+		align-items: center; 
+		justify-content: flex-end;
+	}
+
+	.top-bar-site button{
+		width: 200px;
+		height: 40px;
+		border-radius: 5px;
+		background-color: #844be9;
+		color: #FFF;
+		font-weight: bold;
+		font-family: Arial;
+		margin-right: 30px;
+		border:none;
+		text-transform: uppercase;
+		cursor: pointer;
+  		white-space: nowrap;
+  		overflow: hidden;
+  		text-overflow: ellipsis;		
+	}
+
+	.internal-paddind-button-adjust{
+		padding-left: 30px;
+		box-sizing: border-box;
+	}
+
+
+	.cursor-not-matamask{
+		  cursor: not-allowed;
+		  pointer-events: none;
+	}
+
+	.logout-bt{
+		background-image: url(./img/logout.png);
+		background-repeat: no-repeat;
+		background-position: center;
+		width: 30px;
+		height: 30px;
+		background-size: contain;
+    	margin-right: 30px;
+	}
+
+	.hideElements{
+		display: none;
+		pointer-events: none;
+		opacity: 0;
+	}
+	
+</style>
+
+</head>
+<body>
+
+	<div class="top-bar-site">
+		<button id="btwithdraw">Withdraw</button>
+	</div>
+
+
+<script>
+	
+	let globalConf;
+
+	fetch("./data/contract.json")
+	  .then(response => response.json())
+	  .then(json => globalConf = json );
+
+	const provider = new ethers.providers.Web3Provider(window.ethereum)
+	const btlogin  = document.getElementById("buttonConnectWallet");
+	const btwithdraw  = document.getElementById("btwithdraw");
+	const btlogout = document.getElementById("btlogout");
+	window.usraddr = null;
+
+	async function withdraw(){
+
+			const contract = globalConf.contract.address[0].address;
+
+			const signer = provider.getSigner();
+  			
+  			const abi = globalConf.contract.abi;
+
+			const daiContract = new ethers.Contract(contract, abi, signer);
+
+			const draw = await daiContract.withdraw()
+			.then((res)=>{
+  				console.log(res)
+  			}).catch((err)=>{
+
+  				let trated = JSON.stringify(err);
+  				let parse = JSON.parse(trated);
+  				alert(parse.error.message)
+  			})
+
+	}
+
+	window.addEventListener("DOMContentLoaded", (event)=> {
+		btwithdraw.addEventListener("click", ()=>{
+			withdraw();
+		})
+  	});
+
+</script>	
+</body>
+</html>
